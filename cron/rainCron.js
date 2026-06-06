@@ -2,6 +2,8 @@ const cron = require('node-cron')
 const fs = require('fs')
 const path = require('path')
 const collectService = require('../services/collectService')
+const rainService = require('../services/rainService')
+const feishuService = require('../services/feishuService')
 
 const LOG_DIR = path.join(__dirname, '../logs')
 
@@ -48,17 +50,39 @@ async function collectWithRetry(date, maxRetries = 3) {
     return null
 }
 
+async function pushToFeishu(date) {
+    try {
+        writeLog('INFO', `开始推送飞书通知`)
+        const data = await rainService.getYesterdayRank(date)
+        const success = await feishuService.sendRainReport(date, data)
+
+        if (success) {
+            writeLog('INFO', `飞书推送成功`)
+        } else {
+            writeLog('ERROR', `飞书推送失败`)
+        }
+    } catch (err) {
+        writeLog('ERROR', `飞书推送异常: ${err.message}`)
+    }
+}
+
 function startRainCron() {
     cron.schedule('0 5 * * *', async () => {
         writeLog('INFO', '========== 定时任务开始 ==========')
         const date = getYesterdayDate()
-        await collectWithRetry(date)
+
+        const result = await collectWithRetry(date)
+
+        if (result && result.success > 0) {
+            await pushToFeishu(date)
+        }
+
         writeLog('INFO', '========== 定时任务结束 ==========')
     }, {
         timezone: 'Asia/Shanghai'
     })
 
-    writeLog('INFO', '定时任务已启动: 每天05:00采集昨日降雨数据')
+    writeLog('INFO', '定时任务已启动: 每天05:00采集昨日降雨数据并推送飞书')
 }
 
 module.exports = { startRainCron }
