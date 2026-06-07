@@ -1,11 +1,10 @@
 const mysql = require('mysql2/promise')
 
-// 创建连接池（重点）
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'Mysql@859284',
-    database: 'rain_db',
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'rain_db',
     waitForConnections: true,
     connectionLimit: 10
 })
