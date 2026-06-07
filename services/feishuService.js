@@ -60,9 +60,82 @@ class FeishuService {
         }
     }
 
-    async sendRainReport(date, data) {
+    buildAlertCard(date, result, failedCities) {
+        let markdownContent = `**📅 日期：${date}**\n\n`
+        markdownContent += `✅ 成功：**${result.success}** / ${result.total}\n`
+        markdownContent += `❌ 失败：**${result.total - result.success}** 个城市\n\n`
+
+        if (failedCities.length > 0) {
+            markdownContent += '**失败城市：**\n'
+            failedCities.forEach(city => {
+                markdownContent += `- ${city.name}：${city.error}\n`
+            })
+        }
+
+        return {
+            msg_type: 'interactive',
+            card: {
+                schema: '2.0',
+                config: {
+                    update_multi: true
+                },
+                header: {
+                    title: {
+                        tag: 'plain_text',
+                        content: '⚠️ 采集告警通知'
+                    },
+                    template: 'red'
+                },
+                body: {
+                    direction: 'vertical',
+                    padding: '12px 12px 12px 12px',
+                    elements: [
+                        {
+                            tag: 'markdown',
+                            content: markdownContent
+                        }
+                    ]
+                }
+            }
+        }
+    }
+
+    buildHeartbeatCard(status) {
+        let markdownContent = `**⏰ 时间：${status.time}**\n\n`
+        markdownContent += `🟢 状态：**${status.status}**\n`
+        markdownContent += `📊 昨日采集：**${status.lastCollect}**\n`
+        markdownContent += `⏱️ 服务运行：**${status.uptime}**\n`
+
+        return {
+            msg_type: 'interactive',
+            card: {
+                schema: '2.0',
+                config: {
+                    update_multi: true
+                },
+                header: {
+                    title: {
+                        tag: 'plain_text',
+                        content: '💓 服务心跳报告'
+                    },
+                    template: 'green'
+                },
+                body: {
+                    direction: 'vertical',
+                    padding: '12px 12px 12px 12px',
+                    elements: [
+                        {
+                            tag: 'markdown',
+                            content: markdownContent
+                        }
+                    ]
+                }
+            }
+        }
+    }
+
+    async sendCard(card) {
         try {
-            const card = this.buildRainCard(date, data)
             const res = await axios.post(FEISHU_WEBHOOK, card, {
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -78,6 +151,21 @@ class FeishuService {
             console.error('飞书推送异常:', err.message)
             return false
         }
+    }
+
+    async sendRainReport(date, data) {
+        const card = this.buildRainCard(date, data)
+        return await this.sendCard(card)
+    }
+
+    async sendAlert(date, result, failedCities) {
+        const card = this.buildAlertCard(date, result, failedCities)
+        return await this.sendCard(card)
+    }
+
+    async sendHeartbeat(status) {
+        const card = this.buildHeartbeatCard(status)
+        return await this.sendCard(card)
     }
 }
 
