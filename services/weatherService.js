@@ -6,13 +6,11 @@ const API_HOST = process.env.QWEATHER_HOST || 'ke564uq49g.re.qweatherapi.com'
 
 class WeatherService {
 
-    // 获取城市列表
     async getCities() {
         const [rows] = await db.query('SELECT * FROM city')
         return rows
     }
 
-    // 获取某个城市某一天降雨
     async getCityRain(locationId, date) {
         const url = `https://${API_HOST}/v7/historical/weather`
 
@@ -31,6 +29,42 @@ class WeatherService {
             date,
             rainfall: data?.weatherDaily?.precip || 0
         }
+    }
+
+    async getCityTempNow(locationId) {
+        const url = `https://${API_HOST}/v7/weather/now`
+
+        const res = await axios.get(url, {
+            params: {
+                location: locationId,
+                key: API_KEY
+            }
+        })
+
+        return {
+            temp: parseFloat(res.data?.now?.temp) || 0,
+            text: res.data?.now?.text || ''
+        }
+    }
+
+    async getAllCitiesTempNow() {
+        const [cities] = await db.query('SELECT * FROM city')
+        const results = []
+
+        for (const city of cities) {
+            try {
+                const { temp, text } = await this.getCityTempNow(city.location_id)
+                results.push({
+                    city: city.name,
+                    temp,
+                    text
+                })
+            } catch (err) {
+                console.error(`获取 ${city.name} 温度失败:`, err.message)
+            }
+        }
+
+        return results
     }
 
 }
