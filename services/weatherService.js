@@ -42,7 +42,7 @@ class WeatherService {
         })
 
         return {
-            temp: parseFloat(res.data?.now?.temp) || 0,
+            feelsLike: parseFloat(res.data?.now?.feelsLike) || 0,
             text: res.data?.now?.text || ''
         }
     }
@@ -53,10 +53,10 @@ class WeatherService {
 
         for (const city of cities) {
             try {
-                const { temp, text } = await this.getCityTempNow(city.location_id)
+                const { feelsLike, text } = await this.getCityTempNow(city.location_id)
                 results.push({
                     city: city.name,
-                    temp,
+                    feelsLike,
                     text
                 })
             } catch (err) {

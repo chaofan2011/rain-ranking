@@ -104,32 +104,32 @@ class FeishuService {
         const now = new Date()
         const timeStr = now.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
 
-        const sorted = [...data].sort((a, b) => b.temp - a.temp)
+        const sorted = [...data].sort((a, b) => b.feelsLike - a.feelsLike)
         const top10Hot = sorted.slice(0, 10)
         const top10Cold = sorted.slice(-10).reverse()
 
         let markdownContent = `**⏰ 时间：${timeStr}**\n\n`
 
-        markdownContent += '🔥 **最高气温 Top10**\n\n'
-        markdownContent += '| 排名 | 城市 | 气温 | 天气 |\n| --- | --- | --- | --- |\n'
+        markdownContent += '🔥 **最高体感 Top10**\n\n'
+        markdownContent += '| 排名 | 城市 | 体感 | 天气 |\n| --- | --- | --- | --- |\n'
         top10Hot.forEach((item, index) => {
             let medal = ''
             if (index === 0) medal = '🥇'
             else if (index === 1) medal = '🥈'
             else if (index === 2) medal = '🥉'
             else medal = `${index + 1}`
-            markdownContent += `| ${medal} | ${item.city} | ${item.temp}°C | ${item.text} |\n`
+            markdownContent += `| ${medal} | ${item.city} | ${item.feelsLike}°C | ${item.text} |\n`
         })
 
-        markdownContent += '\n❄️ **最低气温 Top10**\n\n'
-        markdownContent += '| 排名 | 城市 | 气温 | 天气 |\n| --- | --- | --- | --- |\n'
+        markdownContent += '\n❄️ **最低体感 Top10**\n\n'
+        markdownContent += '| 排名 | 城市 | 体感 | 天气 |\n| --- | --- | --- | --- |\n'
         top10Cold.forEach((item, index) => {
             let medal = ''
             if (index === 0) medal = '🥇'
             else if (index === 1) medal = '🥈'
             else if (index === 2) medal = '🥉'
             else medal = `${index + 1}`
-            markdownContent += `| ${medal} | ${item.city} | ${item.temp}°C | ${item.text} |\n`
+            markdownContent += `| ${medal} | ${item.city} | ${item.feelsLike}°C | ${item.text} |\n`
         })
 
         return {
@@ -142,7 +142,7 @@ class FeishuService {
                 header: {
                     title: {
                         tag: 'plain_text',
-                        content: '🌡️ 全国实时气温排名'
+                        content: '🌡️ 全国体感温度排名'
                     },
                     template: 'orange'
                 },
