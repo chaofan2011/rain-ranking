@@ -3,6 +3,7 @@ const express = require('express')
 const fs = require('fs')
 const path = require('path')
 const { startRainCron } = require('./cron/rainCron')
+const { startWarningCron } = require('./cron/warningCron')
 
 const app = express()
 const START_TIME = Date.now()
@@ -55,4 +56,5 @@ app.use('/collect', collectRouter)
 app.listen(3000, () => {
     console.log('服务启动成功')
     startRainCron()
+    startWarningCron()
 })

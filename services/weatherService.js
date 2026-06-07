@@ -1,7 +1,8 @@
 const axios = require('axios')
 const db = require('../db/mysql')
 
-const API_KEY = '你的key'
+const API_KEY = process.env.QWEATHER_KEY || '1592825e8dba4e5ca30ad99e2317fba2'
+const API_HOST = process.env.QWEATHER_HOST || 'ke564uq49g.re.qweatherapi.com'
 
 class WeatherService {
 
@@ -13,13 +14,13 @@ class WeatherService {
 
     // 获取某个城市某一天降雨
     async getCityRain(locationId, date) {
-        const url = 'https://ke564uq49g.re.qweatherapi.com/v7/historical/weather'
+        const url = `https://${API_HOST}/v7/historical/weather`
 
         const res = await axios.get(url, {
             params: {
                 location: locationId,
                 date: date.replace(/-/g, ''),
-                key: '1592825e8dba4e5ca30ad99e2317fba2'
+                key: API_KEY
             }
         })
 

@@ -167,6 +167,77 @@ class FeishuService {
         const card = this.buildHeartbeatCard(status)
         return await this.sendCard(card)
     }
+
+    buildWarningCard(data) {
+        const alerts = data.alerts || []
+        const hasWarning = alerts.length > 0
+
+        let markdownContent = ''
+
+        if (hasWarning) {
+            alerts.forEach((alert, index) => {
+                const severity = alert.severity || '未知'
+                const severityEmoji = {
+                    'extreme': '🔴',
+                    'severe': '🟠',
+                    'moderate': '🟡',
+                    'minor': '🔵'
+                }[severity] || '⚪'
+
+                markdownContent += `${severityEmoji} **${alert.headline || alert.eventType?.name || '未知预警'}**\n\n`
+                markdownContent += `- 发布：${alert.senderName || '未知'}\n`
+                markdownContent += `- 时间：${alert.issuedTime || '未知'}\n`
+                markdownContent += `- 失效：${alert.expireTime || '未知'}\n\n`
+
+                if (alert.description) {
+                    markdownContent += `**详情：**\n${alert.description}\n\n`
+                }
+
+                if (alert.instruction) {
+                    markdownContent += `**防御指南：**\n${alert.instruction}\n\n`
+                }
+
+                if (index < alerts.length - 1) {
+                    markdownContent += '---\n\n'
+                }
+            })
+        } else {
+            markdownContent += '当前无天气预警\n\n'
+            markdownContent += '一切正常，请放心出行！'
+        }
+
+        return {
+            msg_type: 'interactive',
+            card: {
+                schema: '2.0',
+                config: {
+                    update_multi: true
+                },
+                header: {
+                    title: {
+                        tag: 'plain_text',
+                        content: hasWarning ? '⚠️ 天气预警 - 天津北辰' : '✅ 天气正常 - 天津北辰'
+                    },
+                    template: hasWarning ? 'orange' : 'green'
+                },
+                body: {
+                    direction: 'vertical',
+                    padding: '12px 12px 12px 12px',
+                    elements: [
+                        {
+                            tag: 'markdown',
+                            content: markdownContent
+                        }
+                    ]
+                }
+            }
+        }
+    }
+
+    async sendWarning(data) {
+        const card = this.buildWarningCard(data)
+        return await this.sendCard(card)
+    }
 }
 
 module.exports = new FeishuService()
