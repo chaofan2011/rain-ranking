@@ -15,6 +15,10 @@ function getYesterdayDate() {
 }
 
 function writeLog(level, message, data = null) {
+    if (!fs.existsSync(LOG_DIR)) {
+        fs.mkdirSync(LOG_DIR, { recursive: true })
+    }
+
     const now = new Date().toISOString()
     const logFile = path.join(LOG_DIR, `${new Date().toISOString().split('T')[0]}.log`)
     const logEntry = `[${now}] [${level}] ${message}${data ? ' ' + JSON.stringify(data) : ''}\n`
