@@ -20,7 +20,7 @@ function writeLog(level, message, data = null) {
 }
 
 function startTempCron() {
-    cron.schedule('0 8-18 * * *', async () => {
+    cron.schedule('0 8-20 * * *', async () => {
         writeLog('INFO', '========== 气温排名推送开始 ==========')
 
         try {
@@ -38,7 +38,7 @@ function startTempCron() {
         timezone: 'Asia/Shanghai'
     })
 
-    writeLog('INFO', '气温排名定时任务已启动: 每天08:00-18:00每小时推送')
+    writeLog('INFO', '气温排名定时任务已启动: 每天08:00-20:00每小时推送')
 }
 
 module.exports = { startTempCron }

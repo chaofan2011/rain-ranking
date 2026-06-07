@@ -6,7 +6,6 @@ const rainService = require('../services/rainService')
 const feishuService = require('../services/feishuService')
 
 const LOG_DIR = path.join(__dirname, '../logs')
-const START_TIME = Date.now()
 
 function getYesterdayDate() {
     const date = new Date()
@@ -95,50 +94,7 @@ function startRainCron() {
         timezone: 'Asia/Shanghai'
     })
 
-    cron.schedule('0 12 * * *', async () => {
-        writeLog('INFO', '========== 心跳推送开始 ==========')
-
-        const now = new Date()
-        const timeStr = now.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
-        const uptimeMs = Date.now() - START_TIME
-        const uptimeHours = Math.floor(uptimeMs / 3600000)
-        const uptimeDays = Math.floor(uptimeHours / 24)
-
-        let uptimeStr = ''
-        if (uptimeDays > 0) {
-            uptimeStr = `${uptimeDays}天${uptimeHours % 24}小时`
-        } else {
-            uptimeStr = `${uptimeHours}小时`
-        }
-
-        const yesterday = getYesterdayDate()
-        const logFile = path.join(LOG_DIR, `${yesterday}.log`)
-        let lastCollect = '无记录'
-
-        if (fs.existsSync(logFile)) {
-            const logContent = fs.readFileSync(logFile, 'utf-8')
-            if (logContent.includes('采集成功')) {
-                lastCollect = '✅ 成功'
-            } else if (logContent.includes('采集失败')) {
-                lastCollect = '❌ 失败'
-            }
-        }
-
-        await feishuService.sendHeartbeat({
-            time: timeStr,
-            status: '运行中',
-            lastCollect,
-            uptime: uptimeStr
-        })
-
-        writeLog('INFO', '========== 心跳推送结束 ==========')
-    }, {
-        timezone: 'Asia/Shanghai'
-    })
-
-    writeLog('INFO', '定时任务已启动:')
-    writeLog('INFO', '  - 每天05:00采集昨日降雨数据并推送飞书')
-    writeLog('INFO', '  - 每天12:00推送服务心跳报告')
+    writeLog('INFO', '定时任务已启动: 每天05:00采集昨日降雨数据并推送飞书')
 }
 
 module.exports = { startRainCron }

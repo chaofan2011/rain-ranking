@@ -100,40 +100,6 @@ class FeishuService {
         }
     }
 
-    buildHeartbeatCard(status) {
-        let markdownContent = `**⏰ 时间：${status.time}**\n\n`
-        markdownContent += `🟢 状态：**${status.status}**\n`
-        markdownContent += `📊 昨日采集：**${status.lastCollect}**\n`
-        markdownContent += `⏱️ 服务运行：**${status.uptime}**\n`
-
-        return {
-            msg_type: 'interactive',
-            card: {
-                schema: '2.0',
-                config: {
-                    update_multi: true
-                },
-                header: {
-                    title: {
-                        tag: 'plain_text',
-                        content: '💓 服务心跳报告'
-                    },
-                    template: 'green'
-                },
-                body: {
-                    direction: 'vertical',
-                    padding: '12px 12px 12px 12px',
-                    elements: [
-                        {
-                            tag: 'markdown',
-                            content: markdownContent
-                        }
-                    ]
-                }
-            }
-        }
-    }
-
     buildTempRankCard(data) {
         const now = new Date()
         const timeStr = now.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
@@ -220,11 +186,6 @@ class FeishuService {
 
     async sendAlert(date, result, failedCities) {
         const card = this.buildAlertCard(date, result, failedCities)
-        return await this.sendCard(card)
-    }
-
-    async sendHeartbeat(status) {
-        const card = this.buildHeartbeatCard(status)
         return await this.sendCard(card)
     }
 
