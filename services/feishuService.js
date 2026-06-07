@@ -14,7 +14,6 @@ class FeishuService {
             markdownContent += '☀️ 全国无降雨'
         } else {
             markdownContent += `🌧️ 共 **${hasRain.length}** 个城市有降雨\n\n`
-            markdownContent += '| 排名 | 城市 | 降雨量 |\n| --- | --- | --- |\n'
 
             top10.forEach((item, index) => {
                 const rainfall = parseFloat(item.rainfall)
@@ -22,12 +21,12 @@ class FeishuService {
                 if (index === 0) medal = '🥇'
                 else if (index === 1) medal = '🥈'
                 else if (index === 2) medal = '🥉'
-                else medal = `${index + 1}`
+                else medal = `${index + 1}.`
 
                 if (rainfall > 0) {
-                    markdownContent += `| ${medal} | ${item.city} | **${item.rainfall}mm** |\n`
+                    markdownContent += `${medal} ${item.city} **${item.rainfall}mm**\n`
                 } else {
-                    markdownContent += `| ${medal} | ${item.city} | ${item.rainfall}mm |\n`
+                    markdownContent += `${medal} ${item.city} ${item.rainfall}mm\n`
                 }
             })
         }
