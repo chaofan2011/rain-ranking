@@ -30,13 +30,13 @@ fi
 echo -e "${GREEN}代码同步成功${NC}"
 log "代码同步成功"
 
-# 2. 服务器安装依赖并重启
-echo -e "${GREEN}2. 服务器安装依赖并重启...${NC}"
-log "服务器安装依赖并重启"
+# 2. 服务器安装依赖并启动/重启
+echo -e "${GREEN}2. 服务器安装依赖并启动/重启...${NC}"
+log "服务器安装依赖并启动/重启"
 ssh $SERVER << 'EOF'
 cd /opt/rain-ranking
 npm install --production
-pm2 restart rain-ranking
+pm2 startOrRestart app.js --name rain-ranking
 EOF
 
 if [ $? -eq 0 ]; then
