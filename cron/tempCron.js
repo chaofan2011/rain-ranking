@@ -1,19 +1,29 @@
 const cron = require('node-cron')
 const fs = require('fs')
 const path = require('path')
+const dayjs = require('dayjs')
+const utc = require('dayjs/plugin/utc')
+const timezone = require('dayjs/plugin/timezone')
 const weatherService = require('../services/weatherService')
 const feishuService = require('../services/feishuService')
 
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
 const LOG_DIR = path.join(__dirname, '../logs')
+
+function getNow() {
+    return dayjs().tz('Asia/Shanghai')
+}
 
 function writeLog(level, message, data = null) {
     if (!fs.existsSync(LOG_DIR)) {
         fs.mkdirSync(LOG_DIR, { recursive: true })
     }
 
-    const now = new Date().toISOString()
-    const logFile = path.join(LOG_DIR, `${new Date().toISOString().split('T')[0]}.log`)
-    const logEntry = `[${now}] [${level}] ${message}${data ? ' ' + JSON.stringify(data) : ''}\n`
+    const now = getNow()
+    const logFile = path.join(LOG_DIR, `${now.format('YYYY-MM-DD')}.log`)
+    const logEntry = `[${now.format('YYYY-MM-DDTHH:mm:ss.SSSZ')}] [${level}] ${message}${data ? ' ' + JSON.stringify(data) : ''}\n`
 
     fs.appendFileSync(logFile, logEntry)
     console.log(logEntry.trim())

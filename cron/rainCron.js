@@ -1,16 +1,24 @@
 const cron = require('node-cron')
 const fs = require('fs')
 const path = require('path')
+const dayjs = require('dayjs')
+const utc = require('dayjs/plugin/utc')
+const timezone = require('dayjs/plugin/timezone')
 const collectService = require('../services/collectService')
 const rainService = require('../services/rainService')
 const feishuService = require('../services/feishuService')
 
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
 const LOG_DIR = path.join(__dirname, '../logs')
 
 function getYesterdayDate() {
-    const date = new Date()
-    date.setDate(date.getDate() - 1)
-    return date.toISOString().split('T')[0]
+    return dayjs().tz('Asia/Shanghai').subtract(1, 'day').format('YYYY-MM-DD')
+}
+
+function getNow() {
+    return dayjs().tz('Asia/Shanghai')
 }
 
 function writeLog(level, message, data = null) {
@@ -18,9 +26,9 @@ function writeLog(level, message, data = null) {
         fs.mkdirSync(LOG_DIR, { recursive: true })
     }
 
-    const now = new Date().toISOString()
-    const logFile = path.join(LOG_DIR, `${new Date().toISOString().split('T')[0]}.log`)
-    const logEntry = `[${now}] [${level}] ${message}${data ? ' ' + JSON.stringify(data) : ''}\n`
+    const now = getNow()
+    const logFile = path.join(LOG_DIR, `${now.format('YYYY-MM-DD')}.log`)
+    const logEntry = `[${now.format('YYYY-MM-DDTHH:mm:ss.SSSZ')}] [${level}] ${message}${data ? ' ' + JSON.stringify(data) : ''}\n`
 
     fs.appendFileSync(logFile, logEntry)
     console.log(logEntry.trim())

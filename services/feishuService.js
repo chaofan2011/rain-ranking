@@ -1,4 +1,10 @@
 const axios = require('axios')
+const dayjs = require('dayjs')
+const utc = require('dayjs/plugin/utc')
+const timezone = require('dayjs/plugin/timezone')
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const FEISHU_WEBHOOK = process.env.FEISHU_WEBHOOK || 'YOUR_WEBHOOK_URL'
 
@@ -101,8 +107,8 @@ class FeishuService {
     }
 
     buildTempRankCard(data) {
-        const now = new Date()
-        const timeStr = now.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
+        const now = dayjs().tz('Asia/Shanghai')
+        const timeStr = now.format('YYYY-MM-DD HH:mm:ss')
 
         const sorted = [...data].sort((a, b) => b.feelsLike - a.feelsLike)
         const top10Hot = sorted.slice(0, 10)

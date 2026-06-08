@@ -2,8 +2,14 @@ require('dotenv').config()
 const express = require('express')
 const fs = require('fs')
 const path = require('path')
+const dayjs = require('dayjs')
+const utc = require('dayjs/plugin/utc')
+const timezone = require('dayjs/plugin/timezone')
 const { startRainCron } = require('./cron/rainCron')
 const { startTempCron } = require('./cron/tempCron')
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const app = express()
 const START_TIME = Date.now()
@@ -27,10 +33,8 @@ app.get('/health', (req, res) => {
         uptimeStr = `${uptimeHours}小时`
     }
 
-    const yesterday = new Date()
-    yesterday.setDate(yesterday.getDate() - 1)
-    const yesterdayStr = yesterday.toISOString().split('T')[0]
-    const logFile = path.join(__dirname, 'logs', `${yesterdayStr}.log`)
+    const yesterday = dayjs().tz('Asia/Shanghai').subtract(1, 'day').format('YYYY-MM-DD')
+    const logFile = path.join(__dirname, 'logs', `${yesterday}.log`)
     let lastCollect = '无记录'
 
     if (fs.existsSync(logFile)) {
@@ -46,7 +50,7 @@ app.get('/health', (req, res) => {
         status: 'ok',
         uptime: uptimeStr,
         lastCollect,
-        time: new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
+        time: dayjs().tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss')
     })
 })
 
