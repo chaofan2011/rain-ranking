@@ -3,3 +3,4 @@ server.log
 .idea/
 logs/
 .env
+deploy.log

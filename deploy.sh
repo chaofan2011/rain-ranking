@@ -1,56 +1,49 @@
 #!/bin/bash
 
-# 服务器部署脚本
-# 使用方法：在服务器上执行 bash deploy.sh
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
 
-set -e
+SERVER="aliyun"
+REMOTE_DIR="/opt/rain-ranking"
+LOG_FILE="deploy.log"
 
-echo "========== 开始部署 =========="
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> $LOG_FILE
+    echo -e "$1"
+}
 
-# 1. 安装依赖
-echo "1. 安装依赖..."
+echo -e "${GREEN}========== 开始部署 ==========${NC}"
+log "开始部署"
+
+# 1. 同步代码到服务器
+echo -e "${GREEN}1. 同步代码到服务器...${NC}"
+log "同步代码到服务器"
+rsync -avz --exclude 'node_modules' --exclude 'logs' --exclude '.env' --exclude 'deploy.log' \
+    ./ $SERVER:$REMOTE_DIR/
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}代码同步失败，终止部署${NC}"
+    log "代码同步失败"
+    exit 1
+fi
+echo -e "${GREEN}代码同步成功${NC}"
+log "代码同步成功"
+
+# 2. 服务器安装依赖并重启
+echo -e "${GREEN}2. 服务器安装依赖并重启...${NC}"
+log "服务器安装依赖并重启"
+ssh $SERVER << 'EOF'
+cd /opt/rain-ranking
 npm install --production
-
-# 2. 创建环境变量配置
-if [ ! -f .env ]; then
-    echo "2. 创建 .env 配置文件..."
-    cat > .env << 'EOF'
-# 数据库配置
-DB_HOST=你的数据库地址
-DB_USER=你的数据库用户名
-DB_PASSWORD=你的数据库密码
-DB_NAME=rain_db
-
-# 飞书配置
-FEISHU_WEBHOOK=你的飞书Webhook地址
+pm2 restart rain-ranking
 EOF
-    echo "   请编辑 .env 文件填写实际配置"
+
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}========== 部署成功 ==========${NC}"
+    log "部署成功"
 else
-    echo "2. .env 文件已存在，跳过创建"
+    echo -e "${RED}========== 部署失败 ==========${NC}"
+    log "部署失败"
+    exit 1
 fi
-
-# 3. 导入数据库（如果有 sql 文件）
-if [ -f rain_db.sql ]; then
-    echo "3. 导入数据库..."
-    read -p "请输入数据库地址: " DB_HOST
-    read -p "请输入数据库用户名: " DB_USER
-    read -s -p "请输入数据库密码: " DB_PASSWORD
-    echo
-    mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD rain_db < rain_db.sql
-    echo "   数据库导入完成"
-else
-    echo "3. 未找到 rain_db.sql，跳过数据库导入"
-fi
-
-# 4. 启动服务
-echo "4. 启动服务..."
-pm2 delete rain-ranking 2>/dev/null || true
-pm2 start app.js --name rain-ranking
-pm2 save
-
-echo "========== 部署完成 =========="
-echo "服务状态："
-pm2 status rain-ranking
-echo ""
-echo "查看日志：pm2 logs rain-ranking"
-echo "健康检查：curl http://localhost:3000/health"
